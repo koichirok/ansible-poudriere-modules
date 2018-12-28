@@ -1,4 +1,5 @@
 galaxy_info:
+  role_name: poudriere-modules
   author: KIKUCHI Koichiro
   description: Ansible modules for poudriere
   license: GPLv3
