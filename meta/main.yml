@@ -1,0 +1,17 @@
+galaxy_info:
+  author: KIKUCHI Koichiro
+  description: Ansible modules for poudriere
+  license: GPLv3
+  min_ansible_version: 2.4
+
+  platforms:
+    - name: FreeBSD
+      versions:
+      - all
+
+  galaxy_tags:
+    - packaging
+    - ports
+    - poudriere
+
+dependencies: []

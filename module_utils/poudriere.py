@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018, KIKUCHI Koichiro <koichiro@hataki.jp>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+
+import re
+
+from ansible.module_utils.basic import AnsibleModule
+
+class Poudriere():
+    def __init__(self, module):
+        '''
+        '''
+        self.module = module
+        self.cmd = [module.params['executable'], '-N']
+        self.headers = []
+        # TODO: check existence of executable here
+
+        etcdir = module.params['etcdir']
+
+        if etcdir:
+            # TODO: check existence of etcdir here
+            self.cmd += ['-e', module.params['etcdir']]
+
+
+    def run_command(self, args, err_msg=None, allow_fail=False):
+        '''
+        wrapper of AnsibleModule#run_command
+        '''
+        (rc, out, err) = self.module.run_command(' '.join(self.make_arguments(args)))
+        if not allow_fail and rc != 0:
+            msg = err_msg or 'failed to execute poudriere'
+            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=msg)
+        return (rc, out, err)
+
+    def make_arguments(self, args):
+        '''
+        :args: list or string
+        '''
+        if type(args) is list:
+            return self.cmd + args
+        else:
+            return self.cmd + [args]
+
+    def extract_list_output(self, output, matcher=None):
+        '''
+        '''
+        lines = output.splitlines()
+
+        begs = [ x.start() for x in re.finditer(r'[^ ]+', lines[0]) ]
+
+        result = []
+
+        for l in lines[1:]:
+            fields = [ l[b:e].strip() for b,e in zip(begs,begs[1:] + [len(l)]) ]
+            if matcher and fields[matcher[0]] == matcher[1]:
+                return fields
+            result.append(fields)
+
+        return None if matcher else result
+
+
+class PoudriereModule(AnsibleModule):
+    def __init__(self, argument_spec, **kwargs):
+        common_args_spec = dict(
+            executable=dict(type='path',default='/usr/local/bin/poudriere'),
+            etcdir=dict(type='path',default=None),
+        )
+        common_args_spec.update(argument_spec)
+
+        super(PoudriereModule, self).__init__(argument_spec=common_args_spec, **kwargs)
