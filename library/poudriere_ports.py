@@ -48,12 +48,16 @@ class PoudrierePorts(Poudriere):
         self.branch = self.module.params['branch']
         self.unregister_only = self.module.params['unregister_only']
 
-    def run_command(self, args, err_msg=None):
+    def run_command(self, args, err_msg=None,allow_fail=False):
         msg = err_msg or 'failed to execute poudriere ports command'
-        return super(PoudrierePorts, self).run_command(args, msg)
+        return super(PoudrierePorts, self).run_command(args, msg, allow_fail=allow_fail)
 
     def get_info(self):
-        (rc, out, err) = self.run_command('-l')
+        (rc, out, err) = self.run_command('-l', allow_fail=True)
+
+        # rc == 70 when no ports is exist
+        if rc not in [0, 70]:
+            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg="Error occurred while executing module")
 
         info = self.extract_list_output(out,(0, self.name))
 

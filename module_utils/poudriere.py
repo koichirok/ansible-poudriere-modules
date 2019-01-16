@@ -31,10 +31,11 @@ class Poudriere():
         '''
         wrapper of AnsibleModule#run_command
         '''
-        (rc, out, err) = self.module.run_command(' '.join(self.make_arguments(args)))
+        cmd = ' '.join(self.make_arguments(args))
+        (rc, out, err) = self.module.run_command(cmd)
         if not allow_fail and rc != 0:
             msg = err_msg or 'failed to execute poudriere'
-            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=msg)
+            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=msg,command=cmd)
         return (rc, out, err)
 
     def make_arguments(self, args):
@@ -48,8 +49,13 @@ class Poudriere():
 
     def extract_list_output(self, output, matcher=None):
         '''
+        1st line is treated as header and used to determine length of each field. 
+        matcher is a list or tuple  [field_number, expected_str]
         '''
         lines = output.splitlines()
+
+        if len(lines) < 2:
+            return None
 
         begs = [ x.start() for x in re.finditer(r'[^ ]+', lines[0]) ]
 
