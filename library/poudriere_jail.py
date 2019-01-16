@@ -157,11 +157,33 @@ class PoudriereJail(Poudriere):
                                   jail=self.get_info(),
                                   msg="ports `{}' successfully created.".format(self.name))
         elif self.state in ['started','stopped']:
-            args = ['-s' if self.state == 'started' else '-k', '-j', self.name]
-            if self.ports:
-                args += ['-p', self.ports]
+            # check already running or not by `jls'
+            jail_name = "{}-{}".format(self.name,self.ports)
+            (rc, out, err) = self.module.run_command('jls -j {}'.format(jail_name))
+
+            if rc == 0 and self.state == 'started':
+                self.module.exit_json(changed=False, jail=self.get_info(),
+                                      msg="jail `{}' (ports: {}) already running.".format(self.name, self.ports))
+            elif rc != 0:
+                if 'jail "{}" not found'.format(jail_name) not in err:
+                    self.module.fail_json(rc=rc,stdout=out,stderr=err,msg="Error ocurred while executing module")
+
+                if self.state == 'stopped':
+                    self.module.exit_json(changed=False, jail=self.get_info(),
+                                          msg="jail `{}' (ports: {}) already stopped.".format(self.name, self.ports))
+
+            if self.module.check_mode:
+                self.module.exit_json(changed=True, jail=self.get_info(),
+                                      msg="jail `{}' (ports: {}) will be {}.".format(self.name, self.ports, self.state))
+
+            args = ['-s' if self.state == 'started' else '-k', '-j', self.name, '-p', self.ports]
             if self.set:
                 args += ['-z', self.set]
+
+            (rc, out, err) = self.run_command(args, err_msg="failed to start/stop jail: " + self.name)
+
+            self.module.exit_json(changed=True, rc=rc, stdout=out, stderr=err, jail=self.get_info(),
+                                  msg="jail `{} (ports: {})' successfully {}.".format(self.name, self.ports, self.state))
         else:
             # for Parameters `-u' (update)  and/or `-r' (rename)
             # -t version    -- Version of FreeBSD to upgrade the jail to.
