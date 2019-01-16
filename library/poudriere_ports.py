@@ -46,6 +46,7 @@ class PoudrierePorts(Poudriere):
         self.method = self.module.params['method']
         self.url = self.module.params['url']
         self.branch = self.module.params['branch']
+        self.path = self.module.params['path']
         self.unregister_only = self.module.params['unregister_only']
 
     def run_command(self, args, err_msg=None,allow_fail=False):
