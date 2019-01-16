@@ -112,7 +112,7 @@ class PoudriereJail(Poudriere):
 
             (rc, out, err) = self.run_command(args, err_msg="failed to delete jail: " + self.name)
             result.update(dict(rc=rc,stdout=out,stderr=err,
-                               msg="ports `{}' successfully removed.".format(self.name)))
+                               msg="jail `{}' successfully removed.".format(self.name)))
             self.module.exit_json(**result)
 
         elif self.state == 'present':
@@ -152,10 +152,10 @@ class PoudriereJail(Poudriere):
             if self.module.check_mode:
                 self.module.exit_json(changed=True,
                                       msg="jail `{}' will be created.".format(self.name))
-            (rc, out, err) = self.run_command(args, err_msg="failed to create ports: " + self.name)
+            (rc, out, err) = self.run_command(args, err_msg="failed to create jail: " + self.name)
             self.module.exit_json(changed=True, rc=rc, stdout=out, stderr=err,
                                   jail=self.get_info(),
-                                  msg="ports `{}' successfully created.".format(self.name))
+                                  msg="jail `{}' successfully created.".format(self.name))
         elif self.state in ['started','stopped']:
             # check already running or not by `jls'
             jail_name = "{}-{}".format(self.name,self.ports)
