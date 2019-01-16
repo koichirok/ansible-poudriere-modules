@@ -215,7 +215,7 @@ def main():
             # for state=absent (or should create 'cleaned' for this operation???)
             clean=dict(default=None,choices=['all','cache','logs','packages','wrkdirs']),
             # for state=started/stopped
-            ports=dict(type='str',default=None),
+            ports=dict(type='str',default='default'),
             set=dict(type='str',default=None),
         ),
         required_if=[
