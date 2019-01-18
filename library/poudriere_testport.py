@@ -68,7 +68,7 @@ class PoudriereTestport(Poudriere):
         if params['jobs']:
             args += ['-J', params['jobs']]
         if params['ports']:
-            args += ['-J', params['jobs']]
+            args += ['-p', params['ports']]
         if params['set']:
             args += ['-z', params['set']]
         for param,arg in iteritems(BOOL_PARAM_ARG_MAP):
