@@ -54,12 +54,8 @@ class PoudriereTestport(Poudriere):
     """
 
     def __init__(self, module):
-        super(PoudrierePorts, self).__init__(module)
-        self.cmd.append('testport')
-
-    def run_command(self, args, err_msg=None,allow_fail=False):
-        msg = err_msg or 'failed to execute poudriere ports command'
-        return super(PoudrierePorts, self).run_command(args, msg, allow_fail=allow_fail)
+        super(PoudriereTestport, self).__init__(module)
+        self.command = 'testport'
 
     def run_module(self):
         '''

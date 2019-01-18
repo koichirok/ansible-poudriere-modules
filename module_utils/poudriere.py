@@ -16,36 +16,39 @@ class Poudriere():
         '''
         '''
         self.module = module
-        self.cmd = [module.params['executable'], '-N']
+        self.executable = module.params['executable']
+        self.global_opts = '-N'
         self.headers = []
+        self.command = None
         # TODO: check existence of executable here
 
         etcdir = module.params['etcdir']
 
         if etcdir:
             # TODO: check existence of etcdir here
-            self.cmd += ['-e', module.params['etcdir']]
+            self.global_opts += '-e ' + etcdir
 
 
     def run_command(self, args, err_msg=None, allow_fail=False):
         '''
         wrapper of AnsibleModule#run_command
         '''
-        cmd = ' '.join(self.make_arguments(args))
-        (rc, out, err) = self.module.run_command(cmd)
+        (rc, out, err) = self.module.run_command(self.make_command_line(args))
         if not allow_fail and rc != 0:
-            msg = err_msg or 'failed to execute poudriere'
-            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=msg,command=cmd)
+            if err_msg is None:
+                err_msg = 'failed to execute poudriere'
+                if self.command is not None:
+                    err_msg += ' ' + self.command
+            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=err_msg,command=self.make_command_line(args))
         return (rc, out, err)
 
-    def make_arguments(self, args):
+    def make_command_line(self, args):
         '''
-        :args: list or string
+        :args: string or list of string
         '''
         if type(args) is list:
-            return self.cmd + args
-        else:
-            return self.cmd + [args]
+            args = ' '.join(args)
+        return "{} {} {} {}".format(self.executable,self.global_opts,self.command,args)
 
     def extract_list_output(self, output, matcher=None):
         '''
