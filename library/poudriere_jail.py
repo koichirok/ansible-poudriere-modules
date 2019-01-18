@@ -40,7 +40,7 @@ class PoudriereJail(Poudriere):
 
     def __init__(self, module):
         super(PoudriereJail, self).__init__(module)
-        self.cmd.append('jail')
+        self.command = 'jail'
         self.state = module.params['state']
         # for state=present
         self.jobs = module.params['jobs']
@@ -62,12 +62,6 @@ class PoudriereJail(Poudriere):
         # for state=started/stopped
         self.ports = module.params['ports']
         self.set = module.params['set']
-
-
-    def run_command(self, args, err_msg=None, allow_fail=False):
-        msg = err_msg or "failed to execute `poudriere jail' command"
-        return super(PoudriereJail, self).run_command(args, msg, allow_fail=allow_fail)
-
 
     def get_info(self):
         '''

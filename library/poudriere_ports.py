@@ -40,7 +40,7 @@ class PoudrierePorts(Poudriere):
 
     def __init__(self, module):
         super(PoudrierePorts, self).__init__(module)
-        self.cmd.append('ports')
+        self.command = 'ports'
         self.state = self.module.params['state']
         self.name = self.module.params['name']
         self.method = self.module.params['method']
@@ -48,10 +48,6 @@ class PoudrierePorts(Poudriere):
         self.branch = self.module.params['branch']
         self.path = self.module.params['path']
         self.unregister_only = self.module.params['unregister_only']
-
-    def run_command(self, args, err_msg=None,allow_fail=False):
-        msg = err_msg or 'failed to execute poudriere ports command'
-        return super(PoudrierePorts, self).run_command(args, msg, allow_fail=allow_fail)
 
     def get_info(self):
         (rc, out, err) = self.run_command('-l', allow_fail=True)
