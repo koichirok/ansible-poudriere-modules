@@ -37,20 +37,21 @@ from ansible.module_utils.poudriere import Poudriere
 from ansible.module_utils.poudriere import PoudriereModule
 from ansible.module_utils.six import iteritems
 
+BOOL_PARAM_ARG_MAP = dict(
+    allow_failures='-k',
+    leave_jail='-I',
+    build_repository='-N',
+    custom_prefix='-P',
+    skip_recursive_rebuild='-S',
+    save_wrkdir='-w',
+    verbose='-v',
+    debug='-v -v',
+)
+
 class PoudriereTestport(Poudriere):
     """
     Class corresponding to poudriere's testport command.
     """
-    BOOL_PARAM_ARG_MAP = dict(
-        allow_failures='-k',
-        leave_jail='-I',
-        build_repository='-N',
-        custom_prefix='-P',
-        skip_recursive_rebuild='-S',
-        save_wrkdir='-w',
-        verbose='-v',
-        debug='-v -v',
-    )
  
     def __init__(self, module):
         super(PoudriereTestport, self).__init__(module)
@@ -88,20 +89,20 @@ def main():
         dict(
             jail=dict(type='str',required=True),
             origin=dict(type='str',required=True,aliases=['name']),
-            build_name=dict(type='str',default=None), # -B
-            jobs=dict(type='str',default=None), # -J n[:n]
-            allow_failures=dict(type='bool',default=False), # -k
-            leave_jail=dict(type='bool',default=False), # -I advanced interactive mode
-            build_repository=dict(type='bool',default=True), # -N
-            ports=dict(type='str',default=None), # or 'default' -p treename
-            custom_prefix=dict(type='bool',default=False), # -P
-            skip_recursive_rebuild=dict(type='bool',default=False), # -S
-            save_wrkdir=dict(type='bool',default=False), # -w
-            set=dict(type='str',default=None), # -z
-            verbose=dict(type='bool',default=False), # -v
-            debug=dict(type='bool',default=False), # -v -v
+            build_name=dict(type='str',default=None), 
+            jobs=dict(type='str',default=None), 
+            allow_failures=dict(type='bool',default=False),
+            leave_jail=dict(type='bool',default=False),
+            build_repository=dict(type='bool',default=True), 
+            ports=dict(type='str',default=None), # or 'default'
+            custom_prefix=dict(type='bool',default=False),
+            skip_recursive_rebuild=dict(type='bool',default=False),
+            save_wrkdir=dict(type='bool',default=False),
+            set=dict(type='str',default=None),
+            verbose=dict(type='bool',default=False),
+            debug=dict(type='bool',default=False),
         ),
-        supports_check_mode=True # -n dry-run
+        supports_check_mode=True # use dry-run for check
     )
     PoudriereTestport(module).run_module()
 
