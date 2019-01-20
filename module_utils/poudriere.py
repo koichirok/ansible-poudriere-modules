@@ -39,7 +39,7 @@ class Poudriere():
                 err_msg = 'failed to execute poudriere'
                 if self.command is not None:
                     err_msg += ' ' + self.command
-            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=err_msg,command=cmd)
+            self.module.fail_json(rc=rc,stdout=out,stderr=err,msg=err_msg,command=self.make_command_line(args))
         return (rc, out, err)
 
     def make_command_line(self, args):
