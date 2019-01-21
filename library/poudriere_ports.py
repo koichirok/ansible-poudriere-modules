@@ -63,6 +63,27 @@ class PoudrierePorts(Poudriere):
 
         return None
 
+    def create_ports_tree(self):
+        '''
+        currently unsupported options for creating/updating ports tree:
+
+            -F            -- When used with -c, only create the needed filesystems
+                             (for ZFS) and directories, but do not populate them.
+            -f filesystem -- The name of the filesystem to create for the ports tree.
+                             If 'none' then do not create the filesystem.  The default
+                             is: 'poudriere/ports/default'.
+        '''
+        # build arguments
+        args = ['-c', '-p', self.name, '-m', self.method]
+        if self.url:
+            args += ['-U', self.url]
+        if self.path:
+            args += ['-M', self.path]
+        if self.branch: # and (self.method == 'git' or self.method.startswith('svn')):
+            args += ['-B', self.branch]
+
+        return self.run_command(args, err_msg="failed to create ports: " + self.name)
+
     def run_module(self):
         '''
         Do `poudriere ports' operation.
@@ -96,37 +117,34 @@ class PoudrierePorts(Poudriere):
 
         elif self.state == 'present':
             # create ports
-            '''
-            currently unsupported options for creating/updating ports tree:
-
-                -F            -- When used with -c, only create the needed filesystems
-                                 (for ZFS) and directories, but do not populate them.
-                -f filesystem -- The name of the filesystem to create for the ports tree.
-                                 If 'none' then do not create the filesystem.  The default
-                                 is: 'poudriere/ports/default'.
-            '''
             if info:
                 self.module.exit_json(changed=False, ports_tree=info,
                                       msg="ports `{}' already exists.".format(self.name))
-
             if self.module.check_mode:
                 self.module.exit_json(changed=True, msg="ports `{}' will be created.".format(self.name))
 
-            # build arguments
-            args = ['-c', '-p', self.name, '-m', self.method]
-            if self.url:
-                args += ['-U', self.url]
-            if self.path:
-                args += ['-M', self.path]
-            if self.branch: # and (self.method == 'git' or self.method.startswith('svn')):
-                args += ['-B', self.branch]
-
-            (rc, out, err) = self.run_command(args, err_msg="failed to create ports: " + self.name)
+            rc, out, err = self.create_ports_tree()
 
             self.module.exit_json(changed=True,rc=rc,stdout=out,stderr=err,ports_tree=self.get_info(),
                                   msg="ports `{}' successfully created.".format(self.name))
         elif self.state == 'latest': 
+            if self.module.check_mode:
+                if info:
+                    self.module.exit_json(changed=True, msg="ports `{}' will be updated.".format(self.name))
+                else:
+                    self.module.exit_json(changed=True, msg="ports `{}' will be created.".format(self.name))
+
+            if not info:
+                rc, out, err = self.create_ports_tree()
+                self.module.exit_json(changed=True, msg="ports `{}' successfully created.".format(self.name))
+
+            # execute `poudriere ports -u'
             args = ['-u', '-p', self.name, '-m', self.method]
+
+            rc, out, err = self.run_command(args, err_msg="failed to update ports: " + self.name)
+
+            self.module.exit_json(changed=True,rc=rc,stdout=out,stderr=err,ports_tree=self.get_info(),
+                                  msg="ports `{}' successfully updated.".format(self.name))
         else: 
             self.module.fail_json(msg='unreached here')
 
