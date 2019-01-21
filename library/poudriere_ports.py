@@ -84,7 +84,7 @@ class PoudrierePorts(Poudriere):
                 self.module.exit_json(**result)
 
             # build arguments
-            args = ['-d', self.name]
+            args = ['-d', '-p', self.name]
 
             if self.unregister_only:
                 args.append('-k')
@@ -113,7 +113,7 @@ class PoudrierePorts(Poudriere):
                 self.module.exit_json(changed=True, msg="ports `{}' will be created.".format(self.name))
 
             # build arguments
-            args = ['-c', self.name, '-m', self.method]
+            args = ['-c', '-p', self.name, '-m', self.method]
             if self.url:
                 args += ['-U', self.url]
             if self.path:
@@ -125,15 +125,16 @@ class PoudrierePorts(Poudriere):
 
             self.module.exit_json(changed=True,rc=rc,stdout=out,stderr=err,ports_tree=self.get_info(),
                                   msg="ports `{}' successfully created.".format(self.name))
+        elif self.state == 'latest': 
+            args = ['-u', '-p', self.name, '-m', self.method]
         else: 
-            # update ports (state=latest), not implemented
             self.module.fail_json(msg='unreached here')
 
 
 def main():
     module = PoudriereModule(
         dict(
-            state=dict(default='present',choices=['present','absent']), # 'latest']),
+            state=dict(default='present',choices=['present','absent', 'latest']),
             branch=dict(type='str',default=None),
             name=dict(default='default'),
             method=dict(default='portsnap',choices=['git','null','portsnap','svn','svn+http',
